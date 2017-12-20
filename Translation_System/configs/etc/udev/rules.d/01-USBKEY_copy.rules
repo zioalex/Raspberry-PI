@@ -1,0 +1,1 @@
+ACTION=="add", DRIVERS=="usb-storage", KERNEL=="sda1", RUN+="/usr/local/sbin/copy_recording.sh"

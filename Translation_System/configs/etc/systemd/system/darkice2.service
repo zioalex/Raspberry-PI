@@ -1,0 +1,18 @@
+[Unit]
+Description=Start Darkice source for Icecast
+After=network.target icecast2.service
+#After=sound.target
+#Requires=icecast2.service
+
+[Service]
+Type=simple
+#User=matt
+#Group=matt
+WorkingDirectory=/tmp
+ExecStart=/usr/bin/darkice -c /etc/darkice_chroot.cfg
+Restart=on-failure
+KillMode=process
+ExecStopPost=/usr/local/sbin/recording_cleanup.sh
+
+[Install]
+WantedBy=multi-user.target

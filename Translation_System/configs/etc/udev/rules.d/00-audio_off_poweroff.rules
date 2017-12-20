@@ -1,0 +1,2 @@
+ACTION=="remove", KERNEL=="pcmC1D0p", RUN+="/bin/systemctl poweroff"
+#ACTION=="remove", ATTRS{idVendor}=="047f", RUN+="/bin/systemctl poweroff"
