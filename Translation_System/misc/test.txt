@@ -1,0 +1,277 @@
+https://github.com/jitsi/jitsi-meet/issues/6449
+
+apt install openjdk-8-jdk-headless openjdk-8-jre openjdk-8-jre-headless openjdk-8-jdk
+
+update-alternatives --config java
+
+
+Open /etc/jitsi/videobridge/config:
+
+sudo nano /etc/jitsi/videobridge/config
+
+and add line:
+
+VIDEOBRIDGE_MAX_MEMORY=1024m
+
+Save by pressing ctrl+x, ctrl+y and enter when prompted.
+3.7. Experimental: Adjust the Memory Limits on Jicofo (armhf)
+
+Open jicofo.sh:
+
+sudo nano /usr/share/jicofo/jicofo.sh
+
+and change:
+
+exec java -Xmx3072m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp $LOGGING_CONFIG_PARAM $JAVA_SYS_PROPS -cp $cp $mainClass $@
+
+to:
+
+exec java -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp $LOGGING_CONFIG_PARAM $JAVA_SYS_PROPS -cp $cp $mainClass $@
+
+Save by pressing ctrl+x, ctrl+y and enter when prompted.
+
+
+https://gist.github.com/krithin/e50a6001c8435e46cb85f5c6c78e2d66
+
+
+mkdir -p /root/jitsi/jitsi-sctp/jniwrapper/native/src/main/resources/lib/linux-arm/
+
+cp ./jniwrapper/native/target/libjnisctp-linux-arm.so ./jniwrapper/native/src/main/resources/lib/linux-arm/libjnisctp.so
+
+sudo cp ./jniwrapper/native/target/jniwrapper-native-1.0-SNAPSHOT.jar /usr/share/jitsi-videobridge/lib/
+
+
+
+## Jitsi customization
+/etc/jitsi/meet/translation.home.local-config.js
+
+Jibri requirements:
+
+apt install linux-image-extra-virtual
+
+flash-kernel --force 5.15.0-48-generic # needed to have the alsa loop
+It doesn't work on raspi
+
+# I need to recompile with the snd-aloop module
+
+sudo apt install git bc bison flex libssl-dev make
+apt install linux-raspi-tools-5.15.0-1015
+apt install dpkg-dev # Needed to download the source
+
+# enable the source package
+deb-src http://ports.ubuntu.com/ubuntu-ports jammy main restricted
+
+sudo apt-get source linux-image-$(uname -r)
+sudo apt-get build-dep linux-image-$(uname -r)
+
+# May be I found the additional audio module
+apt install linux-modules-extra-5.15.0-1015-raspi
+rm /lib/systemd/system/alsa-utils.service ; systemctl daemon-reload
+apt install unzip ffmpeg curl alsa-utils icewm xdotool  xserver-xorg-video-dummy
+
+# Chrome is not compiled anymore for RaspPI - using chromium
+curl https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo sh -c 'gpg --dearmor > /usr/share/keyrings/google-chrome-keyring.gpg'
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+apt-get -y update
+apt-get -y install google-chrome-stable
+
+apt install chromium-browser chromium-driver # NOP it uses snap
+
+https://askubuntu.com/questions/1204571/how-to-install-chromium-without-snap
+https://packages.debian.org/bullseye/arm64/apt/download
+
+Adapted to run on Raspberry Pi 4
+
+	/etc/apt/sources.list.d/debian.list
+		deb [arch=arm64] http://ftp.ch.debian.org/debian bullseye main 
+		deb [arch=arm64] http://ftp.ch.debian.org/debian bullseye-updates main 
+
+	sudo apt remove chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra
+	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC9673A4F27B8DD47936 62A9605C66F00D6C9793 # 11/bullseye
+	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BCDDDC30D7C23CBBABEE # 10/buster Maybe
+
+	vi /etc/apt/preferences.d/chromium.pref
+		# Note: 2 blank lines are required between entries
+		Package: *
+		Pin: release a=eoan
+		Pin-Priority: 500
+
+	
+		Package: *
+		Pin: origin "deb.debian.org"
+		Pin-Priority: 300
+
+
+		# Pattern includes 'chromium', 'chromium-browser' and similarly
+		# named dependencies:
+		Package: chromium*
+		Pin: origin "deb.debian.org"
+		Pin-Priority: 700	
+
+		Package: chromium*
+		Pin: origin "deb.debian.org"
+		Pin-Priority: 700	
+
+	apt update && apt install chromium/stable chromium-driver/stable
+
+	
+	mkdir -p /etc/opt/chrome/policies/managed
+	echo '{ "CommandLineFlagSecurityWarningsEnabled": false }' >>/etc/opt/chrome/policies/managed/managed_policies.json
+
+	sudo apt-get install default-jre-headless ffmpeg curl alsa-utils icewm xdotool xserver-xorg-video-dummy ruby-hocon
+
+	sudo usermod -aG adm,audio,video,plugdev jibri
+
+
+	# prosody config
+	prosodyctl register jibri auth.translation.home.local jibriauthpass
+	prosodyctl register recorder recorder.translation.home.local jibrirecorderpass
+
+	ln -s /etc/opt/chrome/policies/ /etc/chromium/ # config for chrome and Chromium are stored in different placeS
+
+https://www.linuxcapable.com/how-to-install-chromium-browser-on-ubuntu-22-04-lts/
+I need a plain installation to customize it. True?
+See APT Method with PPA
+sudo add-apt-repository ppa:savoury1/chromium -y
+sudo add-apt-repository ppa:savoury1/ffmpeg4 -y
+apt update
+apt install google-chrome-stable
+
+# Only audio Jibri version https://github.com/luponata/jibri
+
+install jibri for audio recording?
+https://github.com/jitsi/jibri
+
+Jibri requirements:
+
+apt install linux-image-extra-virtual
+# Only audio Jibri version https://github.com/luponata/jibri
+
+# Jibri fails to record. Most probably for a error with the SSL cert.
+In /var/log/jitsi/jibri/log.0.txt and browser.0.txt
+id=13) AC16A1EBFE89EF4D0BF59A3E84E4D942 {           
+   "errorText": "net::ERR_CERT_AUTHORITY_INVALID",  
+   "frameId": "AC16A1EBFE89EF4D0BF59A3E84E4D942",   
+   "loaderId": "89A5EE88A64549017B9A76D19F37CC16"   
+}                                                   
+
+netplan.io required to manage the wlan config
+prosody service seems to be required
+jibri is not needed anymore. The recording is done via python/alsa.
+
+
+# Asound conf
+root@translation:/etc# more asound.conf 
+pcm.trans {
+    type dsnoop
+    ipc_key 5678293
+    ipc_perm 0666
+    ipc_gid audio
+  slave {
+        pcm "hw:2,0" 
+        channels 2 
+        #period_size 1024
+        #buffer_size 4096
+        #rate 48000
+        #periods 0 
+        #period_time 0
+    }
+}
+
+
+# Jupyter notebook
+jupyter notebook --ip 0.0.0.0
+
+# Start the recording
+
+
+# Pulse audio Record input while used
+https://gist.github.com/varqox/c1a5d93d4d685ded539598676f550be8
+## Create the output sink called recording
+pacmd load-module module-null-sink sink_name=recording sink_properties=device.description=recording
+
+pacmd list-sinks | egrep '^\s+name: .*'
+        name: <alsa_output.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo>
+        name: <alsa_output.platform-bcm2835_audio.stereo-fallback>
+        name: <alsa_output.platform-bcm2835_audio.stereo-fallback.2>
+
+The first one is the USB Mic
+
+pacmd load-module module-combine-sink sink_name=combined sink_properties=device.description=combined slaves=recording,alsa_output.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo
+
+# Attach the Mic to the sink
+pacmd list-sources | egrep '^\s+name: .*' | grep input
+        name: <alsa_input.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo>
+
+pacmd load-module module-loopback source=alsa_input.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo sink=recording latency_msec=1
+
+# Set the chromium 
+pavucontrol 
+On the Playback tab
+NOT NEEDED: Loopback from Sound Blaster Play! 3 Analog Stereo on			combined
+output deviced recording db 130%
+# Record 
+
+https://translation.home.local/english#config.startWithAudioMuted=false&config.startWithVideoMuted=true
+
+VNC Service file
+/etc/systemd/system/vncserver.service
+[Unit]
+Description=TightVNC server
+After=syslog.target network.target
+
+[Service]
+Type=forking
+User=pi
+#PAMName=login
+PIDFile=/home/pi/.vnc/%H:1.pid
+ExecStartPre=-/usr/bin/vncserver -kill :1 > /dev/null 2>&1
+ExecStart=/usr/bin/vncserver
+ExecStop=/usr/bin/vncserver -kill :1 ; pkill parecord ; pkill pulseaudio
+
+[Install]
+WantedBy=multi-user.target
+
+/home/pi/.xsessionrc
+pi@translation:~$ cat .xsessionrc                                                                                                                  
+# Works with vncserver                                                                                                                             
+set -x                                                                                                                                             
+exec pulseaudio -v --start -D &                                                                                                                    
+exec icewm --replace &                                                                                                                             
+                                                                                                                                                   
+                                                                                                                                                   
+exec pacmd load-module module-null-sink sink_name=recording sink_properties=device.description=recording && \                                      
+pacmd load-module module-combine-sink sink_name=combined sink_properties=device.description=combined slaves=recording,alsa_output.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo && \                                                                                    
+pacmd load-module module-loopback source=alsa_input.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo sink=recording &   
+                                                                                                                                                   
+exec chromium https://translation.home.local/english &                                                                                             
+                                                                                                                                                   
+exec parecord --channels=2 -d recording.monitor /home/pi/output.wav &                                                                              
+
+# Test with soundcard and soundlibrary
+import soundcard as sc
+default_mic = sc.default_microphone()
+default_mic
+# Record the data from the MIC - together while used by Chromium
+data = default_mic.record(samplerate=44100, numframes=441000, channels=2)
+import numpy
+default_speaker.play(data/numpy.max(data), samplerate=44100,channels=2)
+# Write to the file in WAV
+import soundfile
+#f = open("./soundcard.dat", 'wb')
+#f.write(data)
+soundfile.write("./soundcard.wav", data, 44100)
+
+# Test without limit - Hang the RP
+with default_mic.recorder(samplerate=44100,channels=2) as mic:
+    data = mic.record()
+    soundfile.write("./soundcard.wav", data, 44100)
+
+
+# CLI client
+https://github.com/fklement/jitsi-cli
+https://github.com/ryanprior/meet
+https://jitsi.github.io/handbook/docs/dev-guide/dev-guide-iframe-commands/
+
+## Evolution realtime audio
+https://wiki.linuxaudio.org/wiki/raspberrypi
