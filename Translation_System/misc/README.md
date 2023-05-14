@@ -1,3 +1,18 @@
+- [Intro](#intro)
+  - [Consideration](#consideration)
+  - [Goals](#goals)
+  - [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Setup](#setup)
+  - [Jitsi setup](#jitsi-setup)
+  - [Network setup](#network-setup)
+  - [Backend setup](#backend-setup)
+    - [Jupyter setup](#jupyter-setup)
+    - [Node Js](#node-js)
+  - [Frontend setup](#frontend-setup)
+- [Challenge](#challenge)
+- [Todo](#todo)
+
 # Intro
 
 This is the next version of the Translation System. With the legacy system based on Icecast and Darkice we got good the results in terms of easiness of implementation and usabiity but the delay (1-3 secs) is not anymore acceptable.
@@ -37,6 +52,12 @@ Jitsi has per se some hard requirements to work properly
 # Setup
 
 ## Jitsi setup
+## Network setup
+## Backend setup
+
+### Jupyter setup
+### Node Js
+## Frontend setup
 
 # Challenge
 
