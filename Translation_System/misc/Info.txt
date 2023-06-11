@@ -87,7 +87,7 @@ apt install chromium-browser chromium-driver # NOP it uses snap
 https://askubuntu.com/questions/1204571/how-to-install-chromium-without-snap
 https://packages.debian.org/bullseye/arm64/apt/download
 
-JICOFO_MAX_MEMORYAdapted to run on Raspberry Pi 4
+JICOFO_MAX_MEMORY Adapted to run on Raspberry Pi 4
 
 	/etc/apt/sources.list.d/debian.list
 		deb [arch=arm64] http://ftp.ch.debian.org/debian bullseye main 
