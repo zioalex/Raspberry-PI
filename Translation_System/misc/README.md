@@ -11,18 +11,29 @@
   - [Jitsi setup](#jitsi-setup)
     - [Jitsi customization](#jitsi-customization)
     - [Recompile jniwrapper-native-1.0-SNAPSHOT](#recompile-jniwrapper-native-10-snapshot)
+  - [SSL Certificate](#ssl-certificate)
+    - [SSL Certificate creation](#ssl-certificate-creation)
+    - [Nginx SSL Certificate configuration](#nginx-ssl-certificate-configuration)
+    - [Jitsi SSL Certificate configuration](#jitsi-ssl-certificate-configuration)
+  - [Enable the NGINX config](#enable-the-nginx-config)
   - [Prosody setup](#prosody-setup)
   - [Audio Recording](#audio-recording)
     - [Asound conf - Is this used in the last pulse version?](#asound-conf---is-this-used-in-the-last-pulse-version)
     - [Create the output sink called recording](#create-the-output-sink-called-recording)
     - [Attach the Mic to the sink](#attach-the-mic-to-the-sink)
+    - [Test the recording with PulseAudio](#test-the-recording-with-pulseaudio)
+    - [Audio Recording References](#audio-recording-references)
+    - [Jupyter setup to record the audio with Python](#jupyter-setup-to-record-the-audio-with-python)
   - [Network setup](#network-setup)
   - [Backend setup](#backend-setup)
-    - [Jupyter setup](#jupyter-setup)
     - [Node Js](#node-js)
   - [Frontend setup](#frontend-setup)
   - [GUI](#gui)
+    - [GUI Tuning](#gui-tuning)
+    - [VNC Setup](#vnc-setup)
+      - [VNC config](#vnc-config)
 - [Challenge](#challenge)
+- [Best practices](#best-practices)
 - [Todo](#todo)
 
 # Intro
@@ -181,6 +192,58 @@ When running mvn package ensure all unit tests are successful. You will see some
 
 [2]: https://gist.github.com/krithin/e50a6001c8435e46cb85f5c6c78e2d66
 
+## SSL Certificate
+### SSL Certificate creation
+See the document [letsencrypt.md](./letsencrypt.md)
+### Nginx SSL Certificate configuration
+New file /etc/nginx/sites-available/translation.sennsolution.com.conf with the new domain
+
+### Jitsi SSL Certificate configuration
+Cert copied in Jitsi folder following the one configured in the nginx config file
+```bash
+scp ~/letsencrypt/archive/translation.sennsolutions.com/fullchain1.pem pi@translation.home.local:/tmp/ 	# from bigone
+mv /tmp/fullchain1.pem /etc/ssl/translation.sennsolutions.com.crt                         				# on translation
+
+scp ~/letsencrypt/archive/translation.sennsolutions.com/privkey1.pem pi@translation.home.local:/tmp/	# from bigone
+mv /tmp/privkey1.pem /etc/ssl/translation.sennsolutions.com.key					                        # on translation
+
+# Create a new Jitsi config with all the domain changed
+vi /etc/jitsi/meet/translation.senncolutions.com-config.js
+
+#Update all Jitsi config
+cd /etc/jitsi
+sed -i=bck 's/home\.local/sennsolutions\.com/' jibri/jibri.conf jicofo/config jicofo/jicofo.conf videobridge/sip-communicator.properties videobridge/config videobridge/jvb.conf
+
+
+#Update Prosodi
+cd /etc/prosody
+sed': sed -i.bck 's/translation\.home\.local/translation\.sennsolutions\.com/g' prosody.cfg.lua
+cd conf.avail
+create a file /etc/prosody/conf.avail/translation.sensolutions.com.cfg.lua with all the domain changed
+sed': sed -i.bck 's/translation\.home\.local/translation\.sennsolutions\.com/g' translation.sensolutions.com.cfg.lua
+cd ../conf.d
+ln -s /etc/prosody/conf.avail/translation.sensolutions.com.cfg.lua
+
+## create the prosody cert
+cd /etc/prosody/certs
+make translation.sennsolutions.com.cnf
+make translation.sennsolutions.com.key
+make translation.sennsolutions.com.cnf.csr
+make translation.sennsolutions.com.cnf.crt
+mv translation.sennsolutions.com.cnf.crt translation.sennsolutions.com.crt
+mv translation.sennsolutions.com.cnf.key translation.sennsolutions.com.key
+mv translation.sennsolutions.com.cnf.csr translation.sennsolutions.com.csr
+
+# Restart the Jitsi services to apply the new config
+```
+
+## Enable the NGINX config
+```bash
+cd /etc/nginx/sites-enabled
+ln -s /etc/nginx/sites-available/translation.sennsolution.com.conf
+rm translation.home.local.conf
+systenctl restart nginx
+```
 ## Prosody setup
 
     prosodyctl register jibri auth.translation.home.local jibriauthpass
@@ -211,14 +274,6 @@ Edit the file /etc/asound.conf
         }
     }
 
-To start the python recording script I've used Jupyter Notebook with a different port:
-
-    jupyter notebook --ip 0.0.0.0 --port 8889 
-
-A problem that I found is the difficulty to record the audio while the resource is used by another software. See [gist][5] for more details.
-
-[5]: https://gist.github.com/varqox/c1a5d93d4d685ded539598676f550be8
-
 ### Create the output sink called recording
 
     pacmd load-module module-null-sink sink_name=recording sink_properties=device.description=recording
@@ -238,11 +293,34 @@ The first one is the USB Mic
 
     pacmd load-module module-loopback source=alsa_input.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo sink=recording latency_msec=1
 
+### Test the recording with PulseAudio
+  parecord --channels=2 -d recording.monitor output.wav
+
+### Audio Recording References
+
+- http://mocha.freeshell.org/audio.html
+- https://raw.githubusercontent.com/larsimmisch/pyalsaaudio/main/recordtest.py
+- https://unix.stackexchange.com/questions/361594/device-or-resource-busy-error-thrown-when-trying-to-record-audio-using-arecord
+- https://bbs.archlinux.org/viewtopic.php?id=187258
+- https://alsa.opensrc.org/DmixPlugin
+- https://alsa.opensrc.org/Dsnoop
+- http://larsimmisch.github.io/pyalsaaudio/libalsaaudio.html#examples
+
+
+### Jupyter setup to record the audio with Python
+To start the python recording script I've used Jupyter Notebook with a different port:
+
+    jupyter notebook --ip 0.0.0.0 --port 8889 
+
+A problem that I found, is the difficulty to record the audio while the resource is used by another software. See [gist][5] for more details.
+
+[5]: https://gist.github.com/varqox/c1a5d93d4d685ded539598676f550be8
+
+TOFIX: Add the script to start the recording and or attach the Juypter notebook
 
 ## Network setup
 ## Backend setup
 
-### Jupyter setup
 ### Node Js
 ## Frontend setup
 
@@ -252,7 +330,55 @@ To be able to control the meeting we need to have a way to interact with the Jit
 
 Chrome is not anymore available and therefore we are using Chromium with a React App. Chromium is started in a VNC session so that the system can be easily debugged/controlled remotely.
 
+To start Jitsi as moderator you need to be the first to join the meeting. The first user is the moderator and can control the meeting. The moderator can mute all the users and can also unmute a single user.
+
+The preferred way to start Jitsi is with
+  
+    https://translation.home.local/english#config.startWithAudioMuted=false&config.startWithVideoMuted=true
+
+### GUI Tuning
+To enhance the audio recording level I've started pavucontrol and set the Recording device level to 130%.
+
+### VNC Setup
+Vncserver is started via systemd with the follow config:
+```bash
+/etc/systemd/system/vncserver.service
+[Unit]
+Description=TightVNC server
+After=syslog.target network.target
+
+[Service]
+Type=forking
+User=pi
+#PAMName=login
+PIDFile=/home/pi/.vnc/%H:1.pid
+ExecStartPre=-/usr/bin/vncserver -kill :1 > /dev/null 2>&1
+ExecStart=/usr/bin/vncserver
+ExecStop=/usr/bin/vncserver -kill :1 ; pkill parecord ; pkill pulseaudio
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### VNC config
+TOFIX: Is the file /home/pi/.xsessionrc relevant?
+
+```bash
+.xsessionrc
+# Works with vncserver
+set -x
+exec pulseaudio -v --start -D &
+exec icewm --replace &
+exec pacmd load-module module-null-sink sink_name=recording sink_properties=device.description=recording && \
+pacmd load-module module-combine-sink sink_name=combined sink_properties=device.description=combined slaves=recording,alsa_output.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo && \
+pacmd load-module module-loopback source=alsa_input.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo sink=recording &
+exec chromium https://translation.home.local/english &
+exec parecord --channels=2 -d recording.monitor /home/pi/output.wav &
+```
 # Challenge
+
+# Best practices
+- Best recording with the Mic at 5-10cm far from the mouth
 
 # Todo
 

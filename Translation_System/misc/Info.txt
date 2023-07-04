@@ -249,20 +249,16 @@ ExecStop=/usr/bin/vncserver -kill :1 ; pkill parecord ; pkill pulseaudio
 WantedBy=multi-user.target
 
 /home/pi/.xsessionrc
-pi@translation:~$ cat .xsessionrc                                                                                                                  
-# Works with vncserver                                                                                                                             
-set -x                                                                                                                                             
-exec pulseaudio -v --start -D &                                                                                                                    
-exec icewm --replace &                                                                                                                             
-                                                                                                                                                   
-                                                                                                                                                   
-exec pacmd load-module module-null-sink sink_name=recording sink_properties=device.description=recording && \                                      
-pacmd load-module module-combine-sink sink_name=combined sink_properties=device.description=combined slaves=recording,alsa_output.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo && \                                                                                    
-pacmd load-module module-loopback source=alsa_input.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo sink=recording &   
-                                                                                                                                                   
-exec chromium https://translation.home.local/english &                                                                                             
-                                                                                                                                                   
-exec parecord --channels=2 -d recording.monitor /home/pi/output.wav &                                                                              
+pi@translation:~$ cat .xsessionrc
+# Works with vncserver
+set -x
+exec pulseaudio -v --start -D &
+exec icewm --replace &
+exec pacmd load-module module-null-sink sink_name=recording sink_properties=device.description=recording && \
+pacmd load-module module-combine-sink sink_name=combined sink_properties=device.description=combined slaves=recording,alsa_output.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo && \
+pacmd load-module module-loopback source=alsa_input.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00252407-00.analog-stereo sink=recording &
+exec chromium https://translation.home.local/english &
+exec parecord --channels=2 -d recording.monitor /home/pi/output.wav &
 
 # Test with soundcard and soundlibrary
 import soundcard as sc
@@ -330,6 +326,8 @@ cd /etc/nginx/sites-enabled
 ln -s /etc/nginx/sites-available/translation.sennsolution.com.conf
 rm translation.home.local.conf
 systenctl restar nginx
+
+---CONTINUE HERE---
 
 # CLI client
 https://github.com/fklement/jitsi-cli
@@ -449,7 +447,7 @@ Add the IP translation.sennsolution.com addresses for both IPV4 and IPV6
 http://10.0.0.2:8989/admin/login.php
 
 
-MTU 1472 if goinh through 192.168.178.2 <----Removed DGF to 192.168.178.2 on translation.home.local
+MTU 1472 if goinh through 192.168.178.2 <----Removed DGW to 192.168.178.2 on translation.home.local
 
 With a proxy all the traffic flow correctly
 
