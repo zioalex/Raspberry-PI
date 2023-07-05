@@ -225,6 +225,9 @@ cd ../conf.d
 ln -s /etc/prosody/conf.avail/translation.sensolutions.com.cfg.lua
 
 ## create the prosody cert
+# This certificate is for Prosody. 
+# It expires on Jan 14 2024 - Can We make it longer?
+# Whats happens if it expires?
 cd /etc/prosody/certs
 make translation.sennsolutions.com.cnf
 make translation.sennsolutions.com.key

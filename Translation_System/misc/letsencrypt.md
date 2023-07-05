@@ -41,6 +41,7 @@ IMPORTANT NOTES:
 
 
 # Manually uploading a file
+cd /home/asurace
 asurace@bigone:~$ letsencrypt certonly --manual -d translation.sennsolutions.com --config-dir letsencrypt/  --work-dir /tmp --logs-dir letsencrypt/log/
 Saving debug log to /home/asurace/letsencrypt/log/letsencrypt.log
 Plugins selected: Authenticator manual, Installer None
