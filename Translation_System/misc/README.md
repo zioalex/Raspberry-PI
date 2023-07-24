@@ -4,6 +4,8 @@
   - [Architecture](#architecture)
 - [Requirements](#requirements)
 - [Setup](#setup)
+  - [How to prepare the SD card with Ubuntu 22.04](#how-to-prepare-the-sd-card-with-ubuntu-2204)
+  - [Boot Ubuntu](#boot-ubuntu)
   - [Important notes](#important-notes)
   - [Installation](#installation)
     - [Audio Setup - To be confirmed](#audio-setup---to-be-confirmed)
@@ -78,6 +80,31 @@ The choosen OS is Ubuntu for Raspberry PI 4. The reason is that the Raspberry PI
 - Microphone
 - A valid SSL certificate
 # Setup
+
+## How to prepare the SD card with Ubuntu 22.04
+Download the Ubuntu 22.04 Server image from [Ubuntu](https://ubuntu.com/download/raspberry-pi/thank-you?version=22.04.2&architecture=server-arm64+raspi).
+Identify the disk with the SD card using lsblk or df to see the mounted device. Be sure to umount before flash it.
+
+Flash it on the SD card with the following commands:
+    SD_DEVICE="PUT YOUR VALUE HERE" # I.E: /dev/sde
+
+    xz -d ubuntu-22.04.2-preinstalled-server-arm64+raspi.img.xz
+    sudo dd bs=4M if=./ubuntu-22.04.2-preinstalled-server-arm64+raspi.img of=$SD_DEVICE conv=fdatasync status=progress
+
+Or use the Raspberry PI Imager[*]
+
+    sudo apt install rpi-imager
+    rpi-imager
+
+[*]: https://discourse.ubuntu.com/t/how-to-install-ubuntu-server-on-your-raspberry-pi/14660
+
+## Boot Ubuntu
+We still need some manual operation to configure the system. The first step is to boot the Raspberry PI and configure the network attaching the RP to a monitor and a keyboard.
+- Login with ubuntu/ubuntu
+- Configure the network with netplan
+- Enable and start the ssh service
+
+**Can we automate this step?**
 ## Important notes
 > ⚠️ **PORT 8888 for jicofo**
 > 
