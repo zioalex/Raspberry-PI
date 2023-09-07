@@ -89,15 +89,22 @@ https://packages.debian.org/bullseye/arm64/apt/download
 
 JICOFO_MAX_MEMORY Adapted to run on Raspberry Pi 4
 
-	/etc/apt/sources.list.d/debian.list
+	write the file /etc/apt/sources.list.d/debian.list
+    
+    cat <<EOF > /etc/apt/sources.list.d/debian.list
 		deb [arch=arm64] http://ftp.ch.debian.org/debian bullseye main 
 		deb [arch=arm64] http://ftp.ch.debian.org/debian bullseye-updates main 
+    EOF
 
 	sudo apt remove chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra
 	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC9673A4F27B8DD47936 62A9605C66F00D6C9793 # 11/bullseye
 	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BCDDDC30D7C23CBBABEE # 10/buster Maybe
 
-	vi /etc/apt/preferences.d/chromium.pref
+    # Ob ubuntu
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9 6ED0E7B82643E131 648ACFD622F3D138 605C66F00D6C9793
+
+
+	cat <<EOF >/etc/apt/preferences.d/chromium.pref
 		# Note: 2 blank lines are required between entries
 		Package: *
 		Pin: release a=eoan
@@ -114,6 +121,7 @@ JICOFO_MAX_MEMORY Adapted to run on Raspberry Pi 4
 		Package: chromium*
 		Pin: origin "deb.debian.org"
 		Pin-Priority: 700	
+    EOF
 
 	apt update && apt install chromium/stable chromium-driver/stable
 
