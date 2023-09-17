@@ -1,3 +1,6 @@
 */_PRIV/*
-Translation_System/misc/Hardware/LCD/2022-01-28-raspios-bullseye-armhf_rb-tft35_autoexpand.img
-Translation_System/misc/Hardware/LCD/2022-01-28-raspios-bullseye-armhf_rb-tft35_autoexpand.zip
+**/2022-01-28-raspios-bullseye-armhf_rb-tft35_autoexpand.img
+**/2022-01-28-raspios-bullseye-armhf_rb-tft35_autoexpand.zip
+**/node_modules
+Legacy_WIP/jitsi_control/
+**/secrets*
